@@ -19,16 +19,20 @@ load("data_collection/twitter_handles.RData")
 
 
 ```{r echo=FALSE}
+
 # I need to join the training data with the congress data so I have more info on
-# the candidates
+# the candidates. I am also filtering out independents because it is not in the
+# scope of this project
 
 joined_data <- training_data %>%
-  left_join(twitter_handles, by = c("screen_name" = "handle"))
+  left_join(twitter_handles, by = c("screen_name" = "handle")) %>%
+  filter(party != "I")
 ```
 
+## Summary Plots 
 
-```{r}
-# visualizing the data set -- looking at amount of tweets over time 
+```{r echo=FALSE}
+# visualizing the data set -- looking at amount of tweets over time. WHAT IS THE OUTLIER??
 
 time_plot <- training_data %>%
   group_by(date) %>% 
@@ -40,7 +44,8 @@ time_plot <- training_data %>%
        x = "Date",
        y = "")
 
-# ggsave(plot = time_plot,"plots/time_summary_plot.png")
+time_plot
+ ggsave(plot = time_plot,"plots/time_summary_plot.png")
 
 # tweets by party
 
@@ -50,14 +55,16 @@ party_count_plot <- joined_data %>%
   count() %>%
   ggplot(aes(x = party, y = n)) +
   geom_col(aes(fill = party)) +
-  scale_fill_manual(values = c("darkblue", "green", "indianred")) +
+  scale_fill_manual(values = c("darkblue", "indianred")) +
   labs(title = "Total Tweets by Party",
        "Democrats tweet the most",
        x = "Party",
        y = "") +
   theme_clean()
 
- # ggsave(plot = party_count_plot, "plots/party_summary_plot.png")
+party_count_plot
+
+ggsave(plot = party_count_plot, "plots/party_summary_plot.png")
 
 # tweets by person
 
@@ -79,11 +86,68 @@ tweets_name_plot <- name_top %>%
        subtitle = "Top 20 tweeters") +
   theme_clean() 
 
-# ggsave(plot = tweets_name_plot, "plots/tweets_by_name_plot.png")
+tweets_name_plot
+ ggsave(plot = tweets_name_plot, "plots/tweets_by_name_plot.png")
 ```
 
+## Wordcloud Analysis
 
-```{r}
+```{r echo=FALSE, warning=FALSE, fig.width=10, fig.height=10}
+
+# now I'm going to do the quanteda stuff
+
+text_corpus <- corpus(joined_data, text_field = "text")
+
+# Because we are doing dictionaries it might be better to do single words
+# instead of phrases. Owen thoughts?
+
+toks_1 <- tokens(text_corpus,
+                 remove_punct = TRUE,
+                 remove_symbols = TRUE,
+                 remove_numbers = TRUE,
+                 remove_url = TRUE) %>%
+  tokens_tolower() %>%
+  tokens_remove(pattern=stopwords("en")) %>%
+  tokens_select(min_nchar = 3) %>%
+  tokens_ngrams(n = 1)
+
+# I guess I will do a wordcloud because why not
+
+dfm_1 <- dfm(toks_1, groups = "party")
+
+# setting the minimum threshold to 2300 because then I only get one warning
+# message
+
+word_cloud_plot <- textplot_wordcloud(dfm_1, comparison = T, min_count = 2300,
+                   color = c("navyblue", "indianred"))
+word_cloud_plot
+
+
 
 ```
+
+## Keyness Analysis
+
+```{r echo=FALSE, fig.width=10.5, fig.height=10}
+
+# making the keyness stat stuff
+
+# Keyness Comparison
+
+keyness_dic_R <- textstat_keyness(dfm_1, target = "R")
+keyness_plot <- textplot_keyness(keyness_dic_R,
+                 margin = .2,
+                 n = 20L,
+                 color = c("indianred", "navyblue"),
+                 labelsize = 6) +
+  labs(title = "Keyness Plot Republican and Democrat Tweets") +
+  theme(plot.title = element_text(size = 25),
+        legend.text = element_text(size = 25),
+        axis.title.x = element_text(size = 20))
+
+keyness_plot
+
+
+```
+
 

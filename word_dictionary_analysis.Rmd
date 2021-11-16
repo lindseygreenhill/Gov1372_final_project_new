@@ -13,29 +13,50 @@ library(lubridate)
 library(ggthemes)
 library(tidyverse)
 load("data_collection/tweets_training_data.RData")
+load("data_collection/twitter_handles.RData")
+
 ```
 
 
 ```{r echo=FALSE}
-# some initial summary statistics
-skim(training_data)
+# I need to join the training data with the congress data so I have more info on
+# the candidates
 
-# some further data cleaning. Taking out all retweets
-dic_data <- training_data %>%
-  filter(is_retweet == FALSE) %>%
-  mutate(date = ymd(str_sub(created_at, 1, 10))) %>%
-  filter(date >= as.Date("2020-11-03"))
+joined_data <- training_data %>%
+  left_join(twitter_handles, by = c("screen_name" = "handle"))
 ```
 
 
 ```{r}
 # visualizing the data set -- looking at amount of tweets over time 
 
-dic_data %>%
+time_plot <- training_data %>%
   group_by(date) %>% 
   count() %>%
   ggplot(aes(x = date, y = n)) +
   geom_point() +
+  theme_clean() +
+  labs(title = "Daily Number of Tweets",
+       x = "Date",
+       y = "")
+
+# ggsave(plot = time_plot,"plots/time_summary_plot.png")
+
+# tweets by party
+
+party_count_plot <- joined_data %>%
+  group_by(party) %>%
+  drop_na() %>%
+  count() %>%
+  ggplot(aes(x = party, y = n)) +
+  geom_col(aes(fill = party)) +
+  scale_fill_manual(values = c("darkblue", "green", "red")) +
+  labs(title = "Total Tweets by Party",
+       "Democrats tweet the most",
+       x = "Party",
+       y = "") +
   theme_clean()
+
+# ggsave(plot = party_count_plot, "plots/party_summary_plot.png")
 ```
 

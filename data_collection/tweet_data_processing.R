@@ -7,7 +7,7 @@ library(tidyverse)
 # reading in the senate twitter sheet. I need to subset the link column so it is
 # just the handle and not the full link
 
-twitter_handles_senate <- read_excel("data/congress_twitter_092721.xlsx",
+twitter_handles_senate <- read_excel("data_collection/data/congress_twitter_092721.xlsx",
                                   sheet = 1,
                                   skip = 1) %>%
   clean_names() %>%
@@ -15,7 +15,7 @@ twitter_handles_senate <- read_excel("data/congress_twitter_092721.xlsx",
 
 # reading in the house twitter sheet
 
-twitter_handles_house <- read_excel("data/congress_twitter_092721.xlsx",
+twitter_handles_house <- read_excel("data_collection/data/congress_twitter_092721.xlsx",
                                      sheet = 2,
                                      skip = 1) %>%
   clean_names() %>%
@@ -27,6 +27,8 @@ twitter_handles <- twitter_handles_house %>%
   rbind(twitter_handles_senate) %>%
   mutate(handle = str_sub(link, start = 21)) %>%
   select(-link)
+
+save(twitter_handles, file = "data_collection/twitter_handles.RData")
 
 # checking for missing values. Looks like 3 members do not have twitter
 # accounts. Those people are Jake Ellzey, Chris Smith, and Jefferson Van Drew so

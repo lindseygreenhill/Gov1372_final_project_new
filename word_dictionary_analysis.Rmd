@@ -50,14 +50,14 @@ party_count_plot <- joined_data %>%
   count() %>%
   ggplot(aes(x = party, y = n)) +
   geom_col(aes(fill = party)) +
-  scale_fill_manual(values = c("darkblue", "green", "red")) +
+  scale_fill_manual(values = c("darkblue", "green", "indianred")) +
   labs(title = "Total Tweets by Party",
        "Democrats tweet the most",
        x = "Party",
        y = "") +
   theme_clean()
 
-# ggsave(plot = party_count_plot, "plots/party_summary_plot.png")
+ # ggsave(plot = party_count_plot, "plots/party_summary_plot.png")
 
 # tweets by person
 
@@ -65,22 +65,21 @@ name_top <- joined_data %>%
   group_by(name, party) %>%
   count() %>%
   arrange(desc(n)) %>%
-  head(10)
+  head(20)
 
-name_bottom <- joined_data %>%
-  group_by(name, party) %>%
-  count() %>%
-  arrange(n) %>%
-  head(10)
-
-name_tweets_plot <- name_top %>%
-  rbind(name_bottom) %>%
+tweets_name_plot <- name_top %>%
   arrange(desc(n)) %>%
   drop_na() %>%
-  ggplot(aes(x = name, y = n)) +
+  ggplot(aes(x = reorder(name, n), y = n)) +
   geom_col(aes(fill = party)) +
+  scale_fill_manual(values = c("navyblue", "indianred")) +
   coord_flip() +
+  labs(x = "Name", y = "Total Tweets",
+       title = "Total Amount of Tweets",
+       subtitle = "Top 20 tweeters") +
   theme_clean() 
+
+# ggsave(plot = tweets_name_plot, "plots/tweets_by_name_plot.png")
 ```
 
 

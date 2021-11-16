@@ -58,5 +58,33 @@ party_count_plot <- joined_data %>%
   theme_clean()
 
 # ggsave(plot = party_count_plot, "plots/party_summary_plot.png")
+
+# tweets by person
+
+name_top <- joined_data %>%
+  group_by(name, party) %>%
+  count() %>%
+  arrange(desc(n)) %>%
+  head(10)
+
+name_bottom <- joined_data %>%
+  group_by(name, party) %>%
+  count() %>%
+  arrange(n) %>%
+  head(10)
+
+name_tweets_plot <- name_top %>%
+  rbind(name_bottom) %>%
+  arrange(desc(n)) %>%
+  drop_na() %>%
+  ggplot(aes(x = name, y = n)) +
+  geom_col(aes(fill = party)) +
+  coord_flip() +
+  theme_clean() 
+```
+
+
+```{r}
+
 ```
 

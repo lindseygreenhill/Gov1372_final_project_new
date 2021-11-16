@@ -1,0 +1,41 @@
+---
+title: "word_dictionary_analysis"
+author: "Lindsey Greenhill"
+date: "11/15/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(quanteda)
+library(skimr)
+library(lubridate)
+library(ggthemes)
+library(tidyverse)
+load("data_collection/tweets_training_data.RData")
+```
+
+
+```{r echo=FALSE}
+# some initial summary statistics
+skim(training_data)
+
+# some further data cleaning. Taking out all retweets
+dic_data <- training_data %>%
+  filter(is_retweet == FALSE) %>%
+  mutate(date = ymd(str_sub(created_at, 1, 10))) %>%
+  filter(date >= as.Date("2020-11-03"))
+```
+
+
+```{r}
+# visualizing the data set -- looking at amount of tweets over time 
+
+dic_data %>%
+  group_by(date) %>% 
+  count() %>%
+  ggplot(aes(x = date, y = n)) +
+  geom_point() +
+  theme_clean()
+```
+

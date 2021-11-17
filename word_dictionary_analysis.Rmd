@@ -11,6 +11,7 @@ library(quanteda)
 library(skimr)
 library(lubridate)
 library(ggthemes)
+library(spacyr)
 library(tidyverse)
 load("data_collection/tweets_training_data.RData")
 load("data_collection/twitter_handles.RData")
@@ -87,16 +88,25 @@ tweets_name_plot <- name_top %>%
   theme_clean() 
 
 tweets_name_plot
- ggsave(plot = tweets_name_plot, "plots/tweets_by_name_plot.png")
+# ggsave(plot = tweets_name_plot, "plots/tweets_by_name_plot.png")
+
+
 ```
+
 
 ## Wordcloud Analysis
 
 ```{r echo=FALSE, warning=FALSE, fig.width=10, fig.height=10}
 
+# this fixes the hashtag problem 
+
+quanteda_options(reset = TRUE)
+quanteda_options("pattern_hashtag" = NULL)
+
 # now I'm going to do the quanteda stuff
 
 text_corpus <- corpus(joined_data, text_field = "text")
+
 
 # Because we are doing dictionaries it might be better to do single words
 # instead of phrases. Owen thoughts?
@@ -109,7 +119,8 @@ toks_1 <- tokens(text_corpus,
   tokens_tolower() %>%
   tokens_remove(pattern=stopwords("en")) %>%
   tokens_select(min_nchar = 3) %>%
-  tokens_ngrams(n = 1)
+  tokens_ngrams(n = 1) %>%
+  tokens_wordstem()
 
 # I guess I will do a wordcloud because why not
 

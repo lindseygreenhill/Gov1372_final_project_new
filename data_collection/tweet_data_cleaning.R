@@ -37,8 +37,6 @@ tweets_full <- Tweets_1 %>%
 # save(tweets_full, file = "tweets_full.RData")
 # making into one big data frame
 
-# I still don't have complete data frame but I am going to clean it anyways
-
 tweets_tidy <- tweets_full %>%
   select(created_at, screen_name, text, is_retweet, hashtags) %>%
   filter(is_retweet == FALSE) %>%
@@ -64,6 +62,24 @@ save(testing_data, file = "data_collection/tweets_testing_data.RData")
 
 # this code is adapted from Blake Robert Mills replication code. He replaced it
 # with description but I am just going to delete them. 
+
+library(ggthemes)
+library(ggpubr)
+tweets_hist <- tweets_tidy %>%
+  group_by(screen_name) %>%
+  count() %>%
+  ggplot(aes(x = n)) +
+  geom_histogram() +
+  theme_clean() +
+  labs(title = "Distribution of Total Tweets",
+       x = "Total Tweets",
+       y = "Count") +
+  theme(plot.title = element_text(size = 20),
+        axis.text = element_text(size = 15),
+        axis.title = element_text(size = 16))
+
+ggsave(tweets_hist, filename = "plots/total_tweets_hist.png")
+  
 
 
 

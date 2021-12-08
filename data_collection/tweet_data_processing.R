@@ -28,7 +28,7 @@ twitter_handles <- twitter_handles_house %>%
   mutate(handle = str_sub(link, start = 21)) %>%
   select(-link)
 
-save(twitter_handles, file = "data_collection/twitter_handles.RData")
+# save(twitter_handles, file = "data_collection/twitter_handles.RData")
 
 # checking for missing values. Looks like 3 members do not have twitter
 # accounts. Those people are Jake Ellzey, Chris Smith, and Jefferson Van Drew so

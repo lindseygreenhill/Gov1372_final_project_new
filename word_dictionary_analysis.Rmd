@@ -46,7 +46,7 @@ time_plot <- training_data %>%
        y = "")
 
 time_plot
- ggsave(plot = time_plot,"plots/time_summary_plot.png")
+# ggsave(plot = time_plot,"plots/time_summary_plot.png")
 
 # tweets by party
 
@@ -65,7 +65,7 @@ party_count_plot <- joined_data %>%
 
 party_count_plot
 
-ggsave(plot = party_count_plot, "plots/party_summary_plot.png")
+# ggsave(plot = party_count_plot, "plots/party_summary_plot.png")
 
 # tweets by person
 
@@ -89,6 +89,8 @@ tweets_name_plot <- name_top %>%
 
 tweets_name_plot
 # ggsave(plot = tweets_name_plot, "plots/tweets_by_name_plot.png")
+
+
 
 
 ```
@@ -157,6 +159,8 @@ keyness_plot <- textplot_keyness(keyness_dic_R,
         axis.title.x = element_text(size = 20))
 
 keyness_plot
+
+# ggsave(filename = "plots/word_dictionary.png")
 
 
 ```

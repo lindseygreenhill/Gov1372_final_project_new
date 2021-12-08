@@ -1,0 +1,143 @@
+---
+title: "bias_analysis"
+author: "Lindsey Greenhill"
+date: "12/8/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(gt)
+library(quanteda)
+library(broom)
+library(skimr)
+library(lubridate)
+library(janitor)
+library(dotwhisker)
+library(tidytext)
+library(haven)
+library(ggthemes)
+library(webshot)
+library(stargazer)
+library(tidyverse)
+library(patchwork)
+library(ggrepel)
+library(ggpubr)
+load("data_collection/tweets_testing_data.RData")
+load("data_collection/twitter_handles.RData")
+
+joined_data <- testing_data %>%
+  left_join(twitter_handles, by = c("screen_name" = "handle")) %>%
+  filter(party != "I")
+```
+
+
+```{r}
+
+# I am now going to give each tweet a score
+
+# dictionary from word dictionary analysis
+
+content_dict <- dictionary(list(republican = c("biden",
+                                               "border",
+                                               "democrat",
+                                               "spend",
+                                               "illeg",
+                                               "china",
+                                               "inflat",
+                                               "pelosi",
+                                               "trillion",
+                                               "afghanistan",
+                                               "polici",
+                                               "southern",
+                                               "communist",
+                                          "bidenbordercrisi",
+                                          "radic",
+                                          "mandat",
+                                          "joe",
+                                          "dem",
+                                          "taxpay",
+                                          "socialist"),
+                                democrat = c("black",
+                                             "work",
+                                             "payment",
+                                             "violenc",
+                                             "vote",
+                                             "act",
+                                             "childtaxcredit",
+                                             "pandem",
+                                             "democraci",
+                                             "communiti",
+                                             "famili",
+                                             "child",
+                                             "help",
+                                             "buildbackbett",
+                                             "pass",
+                                             "care",
+                                             "invest",
+                                             "climat",
+                                        "americanrescueplan",
+                                        "health")))
+
+```
+
+
+```{r}
+# creating text corpus
+
+text_corpus <- corpus(joined_data, text_field = "text")
+
+# creating dfm for cocntent analysis
+
+content_toks <- tokens(text_corpus,
+               remove_punct = TRUE,
+               remove_symbols = TRUE,
+               remove_numbers = TRUE,
+               remove_url = TRUE) %>%
+  tokens_tolower() %>%
+  tokens_remove(pattern=stopwords("en")) %>%
+  tokens_select(min_nchar = 3)
+
+content_dfm <- dfm(content_toks, groups = c("name", "date", "party"))
+
+# selecting words in the dictionaries
+
+content_categories <- dfm_lookup(content_dfm, dictionary = content_dict)
+
+# turning dfm into dataframe
+
+content_df <- convert(content_categories, to = "data.frame")
+
+# changing the quanteda object into a data frame
+
+content_df_cleaned <- content_df %>%
+   mutate(party = substr(doc_id, start = str_length(doc_id), stop = str_length(doc_id)),
+          name = substr(doc_id, start = 1, stop = str_length(doc_id) - 13))
+```
+
+
+```{r echo=FALSE, message=FALSE}
+
+# calculating the language score of each tweet
+
+score_df <- content_df_cleaned %>%
+  mutate(language_score = republican - democrat)
+
+# creating the average for each congressperson
+
+avg_df <- score_df %>%
+  group_by(name, party) %>%
+  summarise(avg_language_score = mean(language_score, na.rm = T)) %>%
+  mutate(republican = if_else(party == "R", 1, 0))
+
+# now I am going to do the regression 
+
+mod_1 <- lm(avg_language_score ~ republican, data = avg_df)
+
+avg_df %>%
+  ggplot(aes(x = republican, y = avg_language_score)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_clean()
+```
+

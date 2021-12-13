@@ -12,6 +12,7 @@ library(quanteda)
 library(broom)
 library(skimr)
 library(lubridate)
+library(sjPlot)
 library(janitor)
 library(dotwhisker)
 library(tidytext)
@@ -183,5 +184,11 @@ mod_2_plot
 
 stargazer(mod_1, mod_2,
           type = "latex")
+
+plot_model(mod_2, type = "pred",
+           terms = "nominate_score") +
+  theme_clean()
+
+# ggsave(filename = "plots/nom_scores_effect_plot.png")
 ```
 
